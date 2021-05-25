@@ -4,8 +4,12 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"strings"
 )
+
+// filepath variable
+var filepath string
 
 // define a struct for each proverb in the string
 type proverb struct {
@@ -61,17 +65,26 @@ func loadProverbs(filepath string) ([]*proverb, error) {
 }
 
 func main() {
-	srcFile := flag.String("src", "proverbs", "a string url")
+	fileFlag := flag.String("f", "", "command line file flag")
 	flag.Parse()
-	quotes, err := loadProverbs(*srcFile)
+
+	envFilePath := os.Getenv("FILE")
+
+	if *fileFlag != "" && len(os.Args) > 0 {
+		filepath = *fileFlag
+	} else if envFilePath != "" {
+		filepath = envFilePath
+	} else {
+		check(fmt.Errorf("no filepath assigned"))
+	}
+
+	quotes, err := loadProverbs(filepath)
 	check(err)
 	
 	for i := 0; i < len(quotes); i++ {
 		var currNum int = i + 1
 		p := quotes[i]
 		var numWords int = len(strings.Split(p.line, " "))
-
-		p.countChars()
 
 		fmt.Printf("%d. %s (WC: %d)\n", currNum, p.line, numWords)
 
